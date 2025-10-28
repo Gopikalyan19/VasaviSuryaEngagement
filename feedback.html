@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave a Message - Vasavi & Surya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FAF7F2 0%, #F5F0E8 100%);
+            min-height: 100vh;
+        }
+        
+        .heading-font {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .message-card {
+            background: white;
+            border-radius: 12px;
+            border-left: 4px solid #E3B448;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .message-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-left-color: #1A5E63;
+        }
+
+        .input-field {
+            transition: all 0.3s ease;
+            border: 2px solid #E5E7EB;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #1A5E63;
+            box-shadow: 0 0 0 3px rgba(26, 94, 99, 0.1);
+        }
+
+        .btn-primary {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(26, 94, 99, 0.25);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #E3B448;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .heart-icon {
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+        }
+
+        .closing-card {
+            background: linear-gradient(135deg, #1A5E63 0%, #2A7E83 100%);
+            color: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(26, 94, 99, 0.25);
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="px-6 lg:px-8 py-6 max-w-6xl mx-auto">
+            <div class="flex justify-between items-center">
+                <a href="index.html">
+                <div class="w-12 h-12 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 24 24">
+                        <g fill="none" stroke="#1A5E63" stroke-width="1.5">
+                            <path d="M11.395 11.734c1.251-.355 1.877-.533 2.212-.198c.335.334.157.96-.199 2.211l-.092.324c-.1.355-.151.533-.127.708s.12.326.31.629l.174.276c.673 1.066 1.01 1.6.78 2.035s-.872.487-2.158.587l-.333.026c-.365.029-.548.043-.708.127s-.278.228-.515.516l-.216.263c-.836 1.014-1.254 1.522-1.73 1.456c-.476-.065-.696-.66-1.135-1.848l-.114-.308c-.125-.338-.187-.507-.31-.63c-.123-.122-.292-.185-.63-.31l-.307-.113c-1.19-.44-1.784-.66-1.849-1.136s.442-.894 1.457-1.73l.262-.215c.288-.238.433-.356.517-.516s.098-.342.126-.708l.026-.333c.1-1.286.15-1.929.587-2.158c.436-.23.97.107 2.036.78l.276.174c.303.191.454.287.629.31c.174.025.352-.026.707-.127z"/>
+                            <path stroke-linecap="round" d="M21.83 19.982c1.01-2.155-2.57-7.028-8-10.884C8.403 5.242 3.183 3.863 2.17 6.018m19.66 13.964c-.49 1.044-1.97 1.259-3.981.763m3.98-.763c.533-1.136-.21-3.029-1.829-5.13m1.83 5.13c-.631 1.344-2.897 1.314-5.83.166M2.17 6.018c-.532 1.136.211 3.028 1.83 5.129m-1.83-5.13c.49-1.044 1.97-1.258 3.981-.763m-3.98.764c-.707 1.506.83 4.341 3.675 7.229" opacity="0.5"/>
+                            <path stroke-linecap="round" d="M18.895 3.395c.099.924.486 1.79 1.105 2.47m-1.105-2.47c-.93.767-1.23.909-2.402 1.135m2.402-1.135L19.204 3m-1.607 4a4.35 4.35 0 0 0-1.105-2.47m0 0L16 4.514"/>
+                        </g>
+                    </svg>            
+                </div> </a>
+                
+               <div class="flex gap-8 items-center">
+                <a href="share-moments.html" class="text-gray-900 font-semibold hover:text-pink-600 transition">Share</a>
+                <a href="feedback.html" class="text-gray-900 font-semibold hover:text-pink-600 transition">Feedback</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="px-6 lg:px-8 py-8 lg:py-12 max-w-5xl mx-auto">
+            <!-- Title Section -->
+            <div class="text-center mb-12 lg:mb-16">
+                <h1 class="heading-font text-4xl lg:text-6xl text-gray-900 mb-4">
+                    Leave a Message 
+                </h1>
+                <p class="text-xl lg:text-2xl text-gray-700 mb-8">
+                    మీ సందేశం ఇవ్వండి
+                </p>
+                <div class="max-w-3xl mx-auto space-y-3">
+                    <p class="text-base lg:text-lg text-gray-600 leading-relaxed">
+                        Your wishes and words mean the world to us. Share your love below.
+                    </p>
+                    <p class="text-base lg:text-lg text-gray-600 leading-relaxed">
+                        మీ శుభాకాంక్షలు మాకు అత్యంత మూల్యమైనవి. మీ ప్రేమను ఇక్కడ పంచుకోండి.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Message Form Card -->
+            <div class="card p-6 lg:p-12 mb-12">
+                <h2 class="text-xl lg:text-2xl font-semibold text-gray-800 mb-6">Share Your Wishes</h2>
+                
+                <!-- IMPORTANT: Replace YOUR_EMAIL@example.com with your actual email -->
+                <form action="https://formsubmit.co/contact.parikshaka@gmail.com" method="POST" id="messageForm" class="space-y-6">
+                    
+                    <!-- FormSubmit Configuration (Hidden Fields) -->
+                    <input type="hidden" name="_subject" value="New Wishes Message from Website!">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_template" value="table">
+                    <input type="text" name="_honey" style="display:none">
+                    <input type="hidden" name="_next" value="https://yourwebsite.com/thank-you.html">
+                    
+                    <div>
+                        <label for="nameInput" class="block text-gray-700 font-medium mb-2">
+                            Name / పేరు <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="nameInput" 
+                            name="name"
+                            required
+                            class="input-field w-full px-4 py-3 rounded-xl text-gray-700"
+                            placeholder="Your name / మీ పేరు">
+                    </div>
+
+                    <div>
+                        <label for="emailInput" class="block text-gray-700 font-medium mb-2">
+                            Email (Optional) / ఇమెయిల్
+                        </label>
+                        <input 
+                            type="email" 
+                            id="emailInput" 
+                            name="email"
+                            class="input-field w-full px-4 py-3 rounded-xl text-gray-700"
+                            placeholder="your@email.com">
+                    </div>
+
+                    <div>
+                        <label for="messageTextarea" class="block text-gray-700 font-medium mb-2">
+                            Message / సందేశం <span class="text-red-500">*</span>
+                        </label>
+                        <textarea 
+                            id="messageTextarea" 
+                            name="message"
+                            rows="5"
+                            required
+                            maxlength="500"
+                            class="input-field w-full px-4 py-3 rounded-xl text-gray-700"
+                            placeholder="Share your blessings and wishes..."></textarea>
+                        <p class="text-sm text-gray-500 mt-2">
+                            <span id="charCount">0</span>/500 characters
+                        </p>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-primary w-full bg-[#1A5E63] text-white py-4 rounded-xl text-base lg:text-lg font-semibold hover:bg-[#E3B448]">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        <span id="buttonText">Submit Message</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Closing Note Card -->
+            <div class="closing-card p-8 lg:p-12 text-center">
+                <i class="fas fa-heart heart-icon text-4xl lg:text-5xl mb-6 inline-block"></i>
+                <h2 class="heading-font text-2xl lg:text-3xl mb-6">Thank You</h2>
+                <p class="text-base lg:text-lg mb-4 leading-relaxed opacity-95">
+                    Thank you for being part of our journey and celebrating our love.
+                </p>
+                <p class="text-base lg:text-lg mb-6 leading-relaxed opacity-95">
+                    మా ప్రేమ ప్రయాణంలో భాగమైనందుకు ధన్యవాదాలు.
+                </p>
+                <p class="text-lg lg:text-lg font-semibold">
+                    – Vasavi Harika & Surya
+                </p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center py-8 text-gray-500 text-sm">
+            <p>Made with 💛 for Vasavi & Surya</p>
+        </footer>
+    </div>
+
+    <script>
+        const messageForm = document.getElementById('messageForm');
+        const nameInput = document.getElementById('nameInput');
+        const messageTextarea = document.getElementById('messageTextarea');
+        const submitBtn = document.getElementById('submitBtn');
+        const buttonText = document.getElementById('buttonText');
+        const charCount = document.getElementById('charCount');
+
+        // Character counter
+        messageTextarea.addEventListener('input', () => {
+            const length = messageTextarea.value.length;
+            charCount.textContent = length;
+            
+            if (length >= 500) {
+                charCount.classList.add('text-red-500');
+            } else {
+                charCount.classList.remove('text-red-500');
+            }
+        });
+
+        // Form submission handler
+        messageForm.addEventListener('submit', (e) => {
+            const name = nameInput.value.trim();
+            const message = messageTextarea.value.trim();
+
+            if (!name || !message) {
+                e.preventDefault();
+                alert('Please fill in all required fields!\nదయచేసి అన్ని అవసరమైన ఫీల్డ్‌లను పూరించండి!');
+                return;
+            }
+
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            buttonText.innerHTML = '<i class="fas fa-spinner spinner mr-2"></i>Sending...';
+        });
+
+        // Auto-focus on name input
+        window.addEventListener('load', () => {
+            nameInput.focus();
+        });
+    </script>
+</body>
+</html>

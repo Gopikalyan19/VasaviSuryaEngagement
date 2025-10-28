@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Your Moments - Vasavi & Surya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #FAF7F2 0%, #F5F0E8 100%);
+            min-height: 100vh;
+        }
+        
+        .heading-font {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .upload-zone {
+            border: 2px dashed #1A5E63;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #FEFDFB;
+        }
+
+        .upload-zone:hover {
+            border-color: #E3B448;
+            background: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(26, 94, 99, 0.1);
+        }
+
+        .upload-zone.drag-over {
+            border-color: #E3B448;
+            background: #FFFFFF;
+            transform: scale(1.02);
+        }
+
+        .photo-preview {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+            background: white;
+        }
+
+        .photo-preview:hover {
+            transform: scale(1.03);
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-info {
+            padding: 8px;
+            font-size: 11px;
+            color: #6B7280;
+            background: #F9FAFB;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        .photo-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .photo-size {
+            color: #6B7280;
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(220, 38, 38, 0.95);
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: 2px solid white;
+            z-index: 10;
+        }
+
+        .remove-photo:hover {
+            background: rgba(185, 28, 28, 1);
+            transform: scale(1.1);
+        }
+
+        .upload-status {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            font-size: 12px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .upload-status.uploading {
+            display: flex;
+        }
+
+        .upload-status.success {
+            display: flex;
+            background: rgba(16, 185, 129, 0.95);
+        }
+
+        .upload-status.error {
+            display: flex;
+            background: rgba(239, 68, 68, 0.95);
+        }
+
+        .individual-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: #E3B448;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-primary {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(26, 94, 99, 0.25);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #E5E7EB;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1A5E63, #E3B448);
+            transition: width 0.3s ease;
+        }
+
+        .message-box {
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success-message {
+            background: #D1FAE5;
+            border: 2px solid #10B981;
+            color: #065F46;
+        }
+
+        .error-message {
+            background: #FEE2E2;
+            border: 2px solid #EF4444;
+            color: #991B1B;
+        }
+
+        .info-message {
+            background: #DBEAFE;
+            border: 2px solid #3B82F6;
+            color: #1E40AF;
+        }
+
+        .debug-info {
+            background: #F3F4F6;
+            border: 1px solid #D1D5DB;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 12px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .upload-summary {
+            background: #F9FAFB;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .upload-summary.active {
+            display: block;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @media (max-width: 768px) {
+            .photo-preview img {
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen">
+        <header class="px-6 lg:px-8 py-6 max-w-6xl mx-auto">
+            <div class="flex justify-between items-center">
+                <a href="index.html">
+                <div class="w-12 h-12 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="36" viewBox="0 0 24 24">
+                        <g fill="none" stroke="#1A5E63" stroke-width="1.5">
+                            <path d="M11.395 11.734c1.251-.355 1.877-.533 2.212-.198c.335.334.157.96-.199 2.211l-.092.324c-.1.355-.151.533-.127.708s.12.326.31.629l.174.276c.673 1.066 1.01 1.6.78 2.035s-.872.487-2.158.587l-.333.026c-.365.029-.548.043-.708.127s-.278.228-.515.516l-.216.263c-.836 1.014-1.254 1.522-1.73 1.456c-.476-.065-.696-.66-1.135-1.848l-.114-.308c-.125-.338-.187-.507-.31-.63c-.123-.122-.292-.185-.63-.31l-.307-.113c-1.19-.44-1.784-.66-1.849-1.136s.442-.894 1.457-1.73l.262-.215c.288-.238.433-.356.517-.516s.098-.342.126-.708l.026-.333c.1-1.286.15-1.929.587-2.158c.436-.23.97.107 2.036.78l.276.174c.303.191.454.287.629.31c.174.025.352-.026.707-.127z"/>
+                            <path stroke-linecap="round" d="M21.83 19.982c1.01-2.155-2.57-7.028-8-10.884C8.403 5.242 3.183 3.863 2.17 6.018m19.66 13.964c-.49 1.044-1.97 1.259-3.981.763m3.98-.763c.533-1.136-.21-3.029-1.829-5.13m1.83 5.13c-.631 1.344-2.897 1.314-5.83.166M2.17 6.018c-.532 1.136.211 3.028 1.83 5.129m-1.83-5.13c.49-1.044 1.97-1.258 3.981-.763m-3.98.764c-.707 1.506.83 4.341 3.675 7.229" opacity="0.5"/>
+                            <path stroke-linecap="round" d="M18.895 3.395c.099.924.486 1.79 1.105 2.47m-1.105-2.47c-.93.767-1.23.909-2.402 1.135m2.402-1.135L19.204 3m-1.607 4a4.35 4.35 0 0 0-1.105-2.47m0 0L16 4.514"/>
+                        </g>
+                    </svg>            
+                </div></a>
+                
+                <div class="flex gap-8 items-center">
+                    <a href="share-moments.html" class="text-gray-900 font-semibold hover:text-pink-600 transition">Share</a>
+                    <a href="feedback.html" class="text-gray-900 font-semibold hover:text-pink-600 transition">Wishes</a>
+                </div>
+            </div>
+        </header>
+
+        <main class="px-6 lg:px-8 py-8 lg:py-12 max-w-5xl mx-auto">
+            <div class="text-center mb-12 lg:mb-16">
+                <h1 class="heading-font text-4xl lg:text-6xl text-gray-900 mb-4">
+                    Share Your Beautiful Moments
+                </h1>
+                
+                <div class="max-w-3xl mx-auto space-y-3">
+                    <p class="text-base lg:text-lg text-gray-600 leading-relaxed">
+                        We'd love to see the celebration through your eyes!
+                    </p>
+                    <p class="text-base lg:text-lg text-black leading-relaxed">
+                        మీ కళ్ల ద్వారా వేడుకను చూడాలని మేము కోరుకుంటున్నాము!
+                    </p>
+                </div>
+            </div>
+
+            <div class="card p-6 lg:p-12">
+
+                <h2 class="text-xl lg:text-2xl font-semibold text-gray-800 mb-6 mt-6">Simple Steps:</h2>
+                <ol class="text-gray-700 space-y-2 mb-10 text-base lg:text-lg">
+                    <li class="flex items-start">
+                        <span class="font-semibold mr-2">1.</span>
+                        <span>Click on the <strong>Upload Photos</strong> button below</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-semibold mr-2">2.</span>
+                        <span>Review your selected photos in the preview</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-semibold mr-2">3.</span>
+                        <span>Hit Submit and watch them upload one by one!</span>
+                    </li>
+                </ol>
+
+                <div class="upload-zone rounded-xl p-12 text-center cursor-pointer mb-8" id="uploadZone">
+                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                    <i class="fas fa-cloud-upload-alt text-5xl lg:text-6xl text-[#1A5E63] mb-4 block"></i>
+                    <p class="text-gray-800 font-semibold text-lg lg:text-xl mb-2">Click to Upload Photos or Drag & Drop</p>
+                    <p class="text-gray-600 text-base lg:text-lg mb-2">ఫోటోలు అప్‌లోడ్ చేయండి</p>
+                    <p class="text-gray-500 text-sm mt-2">Maximum 10 photos • JPG, PNG, GIF up to 2GB each</p>
+                </div>
+
+                <!-- Photo Preview Grid -->
+                <div id="photoPreviewSection" style="display: none;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-images mr-2 text-[#1A5E63]"></i>
+                            Selected Photos (<span id="photoCount">0</span>)
+                        </h3>
+                        <button id="clearAllBtn" class="text-sm text-red-600 hover:text-red-700 font-medium">
+                            <i class="fas fa-trash mr-1"></i>Clear All
+                        </button>
+                    </div>
+                    <div id="photoPreview" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6"></div>
+                </div>
+
+                <!-- Upload Summary -->
+                <div id="uploadSummary" class="upload-summary">
+                    <h3 class="font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-chart-line mr-2"></i>Upload Progress
+                    </h3>
+                    <div class="summary-row">
+                        <span class="text-gray-600">Total Photos:</span>
+                        <span class="font-semibold text-gray-800" id="summaryTotal">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-gray-600">Uploaded:</span>
+                        <span class="font-semibold text-green-600" id="summarySuccess">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-gray-600">Failed:</span>
+                        <span class="font-semibold text-red-600" id="summaryFailed">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-gray-600">Remaining:</span>
+                        <span class="font-semibold text-blue-600" id="summaryRemaining">0</span>
+                    </div>
+                </div>
+
+                <!-- Overall Progress -->
+                <div id="progressContainer" style="display: none;">
+                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                        <span id="progressText">Uploading...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div id="successMessage" class="message-box success-message">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span id="successText"></span>
+                </div>
+                
+                <div id="errorMessage" class="message-box error-message">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <div id="errorText"></div>
+                </div>
+
+                <button id="submitBtn" class="btn-primary w-full bg-[#1A5E63] text-white py-4 rounded-xl text-base lg:text-lg font-semibold hover:bg-[#E3B448] mt-6" disabled>
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Submit Photos - పంపండి
+                </button>
+
+            </div>
+            
+        </main>
+
+        <footer class="text-center py-8 text-gray-500 text-sm">
+            <p>Made with 💛 for Vasavi & Surya</p>
+        </footer>
+    </div>
+
+    <script>
+        // ⚠️ REPLACE WITH YOUR CLOUDINARY CREDENTIALS
+        const CLOUDINARY_CLOUD_NAME = 'dlm1srmar';  // Replace with your cloud name
+        const CLOUDINARY_UPLOAD_PRESET = 'Engagement-Images';  // Replace with your upload preset name
+
+        const MAX_FILES = 10;
+        const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
+        
+        let selectedFiles = [];
+        let uploadedUrls = [];
+        let debugLogs = [];
+        let uploadStats = { total: 0, success: 0, failed: 0, remaining: 0 };
+
+        const elements = {
+            uploadZone: document.getElementById('uploadZone'),
+            fileInput: document.getElementById('fileInput'),
+            photoPreview: document.getElementById('photoPreview'),
+            photoPreviewSection: document.getElementById('photoPreviewSection'),
+            photoCount: document.getElementById('photoCount'),
+            clearAllBtn: document.getElementById('clearAllBtn'),
+            submitBtn: document.getElementById('submitBtn'),
+            progressContainer: document.getElementById('progressContainer'),
+            progressFill: document.getElementById('progressFill'),
+            progressText: document.getElementById('progressText'),
+            progressPercent: document.getElementById('progressPercent'),
+            successMessage: document.getElementById('successMessage'),
+            errorMessage: document.getElementById('errorMessage'),
+            successText: document.getElementById('successText'),
+            errorText: document.getElementById('errorText'),
+            setupInfo: document.getElementById('setupInfo'),
+            uploadSummary: document.getElementById('uploadSummary'),
+            summaryTotal: document.getElementById('summaryTotal'),
+            summarySuccess: document.getElementById('summarySuccess'),
+            summaryFailed: document.getElementById('summaryFailed'),
+            summaryRemaining: document.getElementById('summaryRemaining')
+        };
+
+        function log(message, data = null) {
+            const timestamp = new Date().toISOString();
+            const logEntry = { timestamp, message, data };
+            debugLogs.push(logEntry);
+            console.log(`[${timestamp}] ${message}`, data || '');
+        }
+
+        function showError(message, debugInfo = null) {
+            let errorHTML = `<div>${message}</div>`;
+            
+            if (debugInfo) {
+                errorHTML += `<div class="debug-info mt-3">
+                    <strong>Debug Info:</strong><br>
+                    ${JSON.stringify(debugInfo, null, 2)}
+                </div>`;
+            }
+            
+            elements.errorText.innerHTML = errorHTML;
+            elements.errorMessage.style.display = 'block';
+            elements.successMessage.style.display = 'none';
+            log('Error shown', { message, debugInfo });
+        }
+
+        function showSuccess(message) {
+            elements.successText.textContent = message;
+            elements.successMessage.style.display = 'block';
+            elements.errorMessage.style.display = 'none';
+            log('Success shown', message);
+        }
+
+        function hideMessages() {
+            elements.successMessage.style.display = 'none';
+            elements.errorMessage.style.display = 'none';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function updatePhotoCount() {
+            elements.photoCount.textContent = selectedFiles.length;
+            elements.submitBtn.disabled = selectedFiles.length === 0;
+            
+            if (selectedFiles.length > 0) {
+                elements.photoPreviewSection.style.display = 'block';
+            } else {
+                elements.photoPreviewSection.style.display = 'none';
+            }
+        }
+
+        function updateUploadStats() {
+            uploadStats.remaining = uploadStats.total - uploadStats.success - uploadStats.failed;
+            elements.summaryTotal.textContent = uploadStats.total;
+            elements.summarySuccess.textContent = uploadStats.success;
+            elements.summaryFailed.textContent = uploadStats.failed;
+            elements.summaryRemaining.textContent = uploadStats.remaining;
+        }
+
+        // Test Cloudinary connection
+        window.testConnection = async function() {
+            log('Testing Cloudinary connection...');
+            hideMessages();
+            
+            if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME_HERE' || CLOUDINARY_UPLOAD_PRESET === 'YOUR_UPLOAD_PRESET_HERE') {
+                showError('❌ Please update your Cloudinary credentials in the code first!', {
+                    line: 'Lines 450-451',
+                    currentCloudName: CLOUDINARY_CLOUD_NAME,
+                    currentUploadPreset: CLOUDINARY_UPLOAD_PRESET,
+                    instructions: 'Replace YOUR_CLOUD_NAME_HERE and YOUR_UPLOAD_PRESET_HERE with your actual Cloudinary credentials'
+                });
+                return;
+            }
+
+            try {
+                const testUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+                log('Testing URL', testUrl);
+                
+                const testBlob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==')
+                    .then(r => r.blob());
+                
+                const formData = new FormData();
+                formData.append('file', testBlob);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                formData.append('folder', 'test-connection');
+
+                log('Sending test request...');
+                const response = await fetch(testUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                log('Test response', data);
+
+                if (response.ok) {
+                    showSuccess('✅ Connection successful! Cloudinary is configured correctly. You can now upload photos.');
+                    elements.setupInfo.style.display = 'none';
+                } else {
+                    const errorMsg = data.error?.message || 'Unknown error';
+                    showError(`❌ Connection failed: ${errorMsg}`, {
+                        status: response.status,
+                        error: data.error,
+                        cloudName: CLOUDINARY_CLOUD_NAME,
+                        uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+                        hint: errorMsg.includes('whitelisted') ? 'Make sure your upload preset is set to "Unsigned" mode in Cloudinary settings' : 'Check your credentials'
+                    });
+                }
+            } catch (error) {
+                showError(`❌ Network error: ${error.message}`, {
+                    error: error.toString(),
+                    cloudName: CLOUDINARY_CLOUD_NAME,
+                    uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+                    possibleCauses: ['Invalid cloud name', 'Network connectivity issue', 'CORS policy']
+                });
+            }
+        };
+
+        // Click to upload
+        elements.uploadZone.addEventListener('click', () => elements.fileInput.click());
+
+        // File selection handler
+        elements.fileInput.addEventListener('change', (e) => {
+            handleFiles(Array.from(e.target.files));
+            elements.fileInput.value = '';
+        });
+
+        function handleFiles(files) {
+            hideMessages();
+            log('Handling files', { count: files.length });
+            
+            const validFiles = files.filter(file => {
+                if (!file.type.startsWith('image/')) {
+                    showError(`${file.name} is not an image file`);
+                    return false;
+                }
+                if (file.size > MAX_FILE_SIZE) {
+                    showError(`${file.name} is too large (max 2GB)`);
+                    return false;
+                }
+                if (file.size > 100 * 1024 * 1024) {
+                    console.warn(`⚠️ Large file detected: ${file.name} (${formatFileSize(file.size)}) - upload may take several minutes`);
+                }
+                return true;
+            });
+
+            if (selectedFiles.length + validFiles.length > MAX_FILES) {
+                showError(`Maximum ${MAX_FILES} photos allowed. Currently selected: ${selectedFiles.length}`);
+                return;
+            }
+
+            validFiles.forEach(file => {
+                selectedFiles.push(file);
+                displayPhoto(file);
+            });
+            
+            updatePhotoCount();
+            log('Files added', { total: selectedFiles.length });
+        }
+
+        function displayPhoto(file) {
+            const reader = new FileReader();
+            const fileId = Date.now() + Math.random();
+            
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'photo-preview';
+                div.dataset.fileId = fileId;
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="Photo preview">
+                    <div class="photo-info">
+                        <div class="photo-name" title="${file.name}">${file.name}</div>
+                        <div class="photo-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="remove-photo" data-file-id="${fileId}">×</div>
+                    <div class="upload-status" data-status-id="${fileId}">
+                        <i class="fas fa-spinner spinner"></i>
+                        <span class="status-text">Uploading...</span>
+                    </div>
+                    <div class="individual-progress" data-progress-id="${fileId}"></div>
+                `;
+                elements.photoPreview.appendChild(div);
+                
+                div.querySelector('.remove-photo').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removePhoto(fileId);
+                });
+            };
+            
+            reader.readAsDataURL(file);
+            file.fileId = fileId;
+        }
+
+        function removePhoto(fileId) {
+            selectedFiles = selectedFiles.filter(f => f.fileId !== fileId);
+            const preview = elements.photoPreview.querySelector(`[data-file-id="${fileId}"]`);
+            if (preview) preview.parentElement.remove();
+            updatePhotoCount();
+            log('Photo removed', { fileId, remaining: selectedFiles.length });
+        }
+
+        elements.clearAllBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to remove all photos?')) {
+                selectedFiles = [];
+                elements.photoPreview.innerHTML = '';
+                updatePhotoCount();
+                hideMessages();
+                log('All photos cleared');
+            }
+        });
+
+        function updateOverallProgress(current, total) {
+            const percent = Math.round((current / total) * 100);
+            elements.progressFill.style.width = percent + '%';
+            elements.progressPercent.textContent = percent + '%';
+            elements.progressText.textContent = `Uploading photo ${current} of ${total}...`;
+        }
+
+        function updatePhotoStatus(fileId, status, message = '') {
+            const statusElement = document.querySelector(`[data-status-id="${fileId}"]`);
+            const progressElement = document.querySelector(`[data-progress-id="${fileId}"]`);
+            
+            if (!statusElement) return;
+            
+            statusElement.className = `upload-status ${status}`;
+            
+            if (status === 'uploading') {
+                statusElement.innerHTML = `
+                    <i class="fas fa-spinner spinner"></i>
+                    <span>${message || 'Uploading...'}</span>
+                `;
+            } else if (status === 'success') {
+                statusElement.innerHTML = `
+                    <i class="fas fa-check-circle"></i>
+                    <span>Uploaded!</span>
+                `;
+                if (progressElement) progressElement.style.width = '100%';
+            } else if (status === 'error') {
+                statusElement.innerHTML = `
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Failed</span>
+                `;
+                if (progressElement) progressElement.style.width = '0%';
+            }
+        }
+
+        async function uploadToCloudinary(file, fileId) {
+            log('Starting upload', { filename: file.name, size: file.size });
+            
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                formData.append('folder', 'vasavi-surya-engagement');
+                formData.append('tags', 'engagement,vasavi,surya,wedding');
+                
+                const xhr = new XMLHttpRequest();
+                const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+                
+                // Track upload progress
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        const progressElement = document.querySelector(`[data-progress-id="${fileId}"]`);
+                        if (progressElement) {
+                            progressElement.style.width = percentComplete + '%';
+                        }
+                        updatePhotoStatus(fileId, 'uploading', `${percentComplete}%`);
+                        log('Upload progress', { filename: file.name, percent: percentComplete });
+                    }
+                });
+                
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        const data = JSON.parse(xhr.responseText);
+                        log('Upload complete', { filename: file.name, data });
+                        resolve({
+                            url: data.secure_url,
+                            publicId: data.public_id,
+                            format: data.format,
+                            width: data.width,
+                            height: data.height
+                        });
+                    } else {
+                        const error = JSON.parse(xhr.responseText);
+                        reject(new Error(error.error?.message || `HTTP ${xhr.status}`));
+                    }
+                });
+                
+                xhr.addEventListener('error', () => {
+                    reject(new Error('Network error'));
+                });
+                
+                xhr.open('POST', url);
+                xhr.send(formData);
+            });
+        }
+
+        // Submit button handler
+        elements.submitBtn.addEventListener('click', async () => {
+            if (selectedFiles.length === 0) {
+                showError('Please select at least one photo to upload!\nదయచేసి కనీసం ఒక ఫోటోను ఎంచుకోండి!');
+                return;
+            }
+
+            if (CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME_HERE' || CLOUDINARY_UPLOAD_PRESET === 'YOUR_UPLOAD_PRESET_HERE') {
+                showError('⚠️ Please configure your Cloudinary credentials first! Check the blue info box above.', {
+                    step: 'Update lines 450-451 with your credentials',
+                    cloudName: CLOUDINARY_CLOUD_NAME,
+                    uploadPreset: CLOUDINARY_UPLOAD_PRESET
+                });
+                return;
+            }
+
+            hideMessages();
+            elements.submitBtn.disabled = true;
+            const originalHTML = elements.submitBtn.innerHTML;
+            elements.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Uploading...';
+            elements.progressContainer.style.display = 'block';
+            elements.uploadSummary.classList.add('active');
+            elements.clearAllBtn.style.display = 'none';
+            debugLogs = [];
+
+            // Initialize upload stats
+            uploadStats = { total: selectedFiles.length, success: 0, failed: 0, remaining: selectedFiles.length };
+            updateUploadStats();
+
+            try {
+                uploadedUrls = [];
+                const errors = [];
+
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    updateOverallProgress(i + 1, selectedFiles.length);
+                    updatePhotoStatus(file.fileId, 'uploading');
+                    
+                    try {
+                        const result = await uploadToCloudinary(file, file.fileId);
+                        uploadedUrls.push({ filename: file.name, ...result });
+                        updatePhotoStatus(file.fileId, 'success');
+                        uploadStats.success++;
+                        updateUploadStats();
+                    } catch (error) {
+                        errors.push({ filename: file.name, error: error.message });
+                        updatePhotoStatus(file.fileId, 'error');
+                        uploadStats.failed++;
+                        updateUploadStats();
+                    }
+                }
+
+                elements.progressContainer.style.display = 'none';
+                
+                if (uploadStats.success > 0) {
+                    showSuccess(`Success! ${uploadStats.success} photo(s) uploaded! ✨\nసక్సెస్! ${uploadStats.success} ఫోటోలు అప్‌లోడ్ అయ్యాయి! 🎉`);
+                    console.log('✅ Uploaded URLs:', uploadedUrls);
+                    
+                    if (uploadStats.failed > 0) {
+                        console.warn('⚠️ Some uploads failed:', errors);
+                    }
+                    
+                    // Clear after 8 seconds
+                    setTimeout(() => {
+                        selectedFiles = [];
+                        elements.photoPreview.innerHTML = '';
+                        updatePhotoCount();
+                        hideMessages();
+                        elements.uploadSummary.classList.remove('active');
+                        elements.clearAllBtn.style.display = 'block';
+                    }, 8000);
+                } else {
+                    showError('All uploads failed. Check the debug info below.', { errors, logs: debugLogs });
+                }
+            } catch (error) {
+                showError(`Error: ${error.message}`, { error: error.toString(), logs: debugLogs });
+                elements.progressContainer.style.display = 'none';
+            } finally {
+                elements.submitBtn.disabled = false;
+                elements.submitBtn.innerHTML = originalHTML;
+            }
+        });
+
+        // Drag and drop handlers
+        elements.uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.uploadZone.classList.add('drag-over');
+        });
+
+        elements.uploadZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            elements.uploadZone.classList.remove('drag-over');
+        });
+
+        elements.uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.uploadZone.classList.remove('drag-over');
+            handleFiles(Array.from(e.dataTransfer.files));
+        });
+
+        // Prevent default drag behavior on document
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.body.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        log('Page loaded', { 
+            cloudName: CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME_HERE' ? 'NOT_CONFIGURED' : CLOUDINARY_CLOUD_NAME,
+            uploadPreset: CLOUDINARY_UPLOAD_PRESET === 'YOUR_UPLOAD_PRESET_HERE' ? 'NOT_CONFIGURED' : CLOUDINARY_UPLOAD_PRESET
+        });
+    </script>
+</body>
+</html>
